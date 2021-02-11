@@ -234,8 +234,8 @@ subroutine read_nldas2a(n, kk, findex, order, month, name,ferror)
         if( iv.eq.8 .or. iv.eq.9 ) pcp_flag = .true.            
      
         IF (LIS_rc%do_esmfRegridding) THEN
-           CALL performESMFregrid_nldas2(n, findex, pcp_flag, &
-                          nldas_forcing(:,iv), varfield)
+           CALL performESMFregrid_nldas2(n, findex, month, pcp_flag, &
+                          nldas_forcing(:,iv), lb, varfield)
         ELSE
            call interp_nldas2(n, findex, month, pcp_flag, nldas2,&
                 nldas_forcing(:,iv), & 
@@ -443,8 +443,8 @@ end subroutine interp_nldas2
 !
 ! !INPUT PARAMETERS:
 !
-       subroutine performESMFregrid_nldas2(n, findex, pcp_flag, &
-                                           input_var, output_var)
+       subroutine performESMFregrid_nldas2(n, findex, month, pcp_flag, &
+                                           input_var, input_bitmap, output_var)
 
 ! !USES: 
       use ESMF
@@ -460,9 +460,11 @@ end subroutine interp_nldas2
 !
 ! !INPUT PARAMETERS:
       integer, intent(in)    :: n
+      integer, intent(in)    :: month
       integer, intent(in)    :: findex
       logical, intent(in)    :: pcp_flag
       real,    intent(in)    :: input_var(nldas2_struc(n)%ncold * nldas2_struc(n)%nrold)
+      logical*1, intent(in) :: input_bitmap(nldas2_struc(n)%ncold * nldas2_struc(n)%nrold)
 !
 ! !INPUT/OUTPUT PARAMETERS:
       real,    intent(inout) :: output_var(LIS_rc%lnc(n), LIS_rc%lnr(n))
@@ -482,9 +484,22 @@ end subroutine interp_nldas2
       real(ESMF_KIND_R4), pointer :: forcing_ptr2D(:,:)
       real(ESMF_KIND_R4), pointer :: ptr2Dglob(:,:)
       logical                     :: doConservative
+      integer                     :: input_size
 !EOP
 !------------------------------------------------------------------------------
 !BOC
+
+      if (pcp_flag) then
+         if (LIS_rc%pcp_downscale(findex).eq.1) then
+            !input_data becomes the ratio field. 
+            input_size = nldas2_struc(n)%ncold * nldas2_struc(n)%nrold
+            call LIS_generatePcpClimoRatioField(n, findex, "NLDAS2",&
+                             month, input_size, input_var, input_bitmap)
+         elseif (pcp_flag.and.LIS_rc%pcp_downscale(findex).eq.2) then
+            call LIS_readPcpClimoRatioField(n, findex, month)
+         endif
+      endif
+
        doConservative = .FALSE.
        if (pcp_flag .and. &
               trim(LIS_rc%met_interp(findex)).eq."budget-bilinear") doConservative = .TRUE.

@@ -1038,10 +1038,14 @@ end subroutine rescaleWithCDFmatching
 ! 
 ! !LOCAL VARIABLES:
       integer                     :: i_min, i_max, j_min, j_max
-      integer                     :: kk, c, r, rc, irec
+      integer                     :: kk, c, r, rc, irec, k
       real(ESMF_KIND_R4), pointer :: model_ptr2D(:,:)
       real(ESMF_KIND_R4), pointer :: forcing_ptr2D(:,:)
       logical                     :: doConservative
+      integer                     :: input_size
+      real,      allocatable :: f(:)
+      logical*1, allocatable :: lb(:)
+      real,      allocatable :: loc_input_var(:,:)
 !EOP
 !------------------------------------------------------------------------------
 !BOC
@@ -1054,7 +1058,52 @@ end subroutine rescaleWithCDFmatching
        j_min = merra2_struc(n)%j_min ! lower bound of the second dimension
        j_max = merra2_struc(n)%j_max ! upper bound of the second dimension
 
+       input_size = merra2_struc(n)%ncold*merra2_struc(n)%nrold
+       allocate(f (input_size))
+       allocate(lb(input_size))
+       allocate(loc_input_var(merra2_struc(n)%ncold, merra2_struc(n)%nrold))
+
        DO irec = 1, 24
+          lb(:) = .TRUE.
+          f(:) = RESHAPE(input_var(:, :, irec), (/input_size/) )
+          WHERE (f == 1.e+15)
+                f = LIS_rc%udef
+               lb = .FALSE.
+          ENDWHERE
+
+          !do r=1,merra2_struc(n)%nrold
+          !   do c=1,merra2_struc(n)%ncold
+          !      k= c+(r-1)*merra2_struc(n)%ncold
+          !      f(k) = input_var(c, r, irec)
+          !      if ( f(k) == 1.e+15 ) then
+          !         f(k)  = LIS_rc%udef
+          !         lb(k) = .false.
+          !      endif
+          !   enddo
+          !enddo
+
+          if ( pcp_flag .and. merra2_struc(n)%usescalef==1 ) then
+             call rescaleWithCDFmatching(merra2_struc(n)%ncold,&
+                                         merra2_struc(n)%nrold,&
+                                         merra2_struc(n)%nbins,&
+                                         merra2_struc(n)%refxrange,&
+                                         merra2_struc(n)%merraxrange,&
+                                         merra2_struc(n)%refcdf,&
+                                         merra2_struc(n)%merracdf,&
+                                         f)
+          endif
+
+          !-------------------    
+          ! Apply downscaling
+          !-------------------    
+          if (pcp_flag .and. LIS_rc%pcp_downscale(findex).ne.0) then
+             !input_data becomes the ratio field. 
+             call LIS_generatePcpClimoRatioField(n, findex, "MERRA2",&
+                              month, input_size, f, lb)
+          endif
+
+          loc_input_var(:,:) = RESHAPE(f(:), (/ merra2_struc(n)%ncold, merra2_struc(n)%nrold /) )
+
           ! Get the data from ESMF fields
           IF (doConservative) THEN
              call getPointerFromField(merra2_struc(n)%forcing_fieldCS, forcing_ptr2D)
@@ -1065,7 +1114,7 @@ end subroutine rescaleWithCDFmatching
           ENDIF
 
           ! Extract the 2D local array from the 2D global array
-          forcing_ptr2D(:,:) = input_var(i_min:i_max, j_min:j_max, irec)
+          forcing_ptr2D(:,:) = loc_input_var(i_min:i_max, j_min:j_max)
 
           !--> Do regridding
 
@@ -1105,6 +1154,10 @@ end subroutine rescaleWithCDFmatching
           enddo
           model_ptr2D = 0.0
        ENDDO
+
+       deallocate(f )
+       deallocate(lb)
+       deallocate(loc_input_var)
 
        end subroutine performESMFregrid_merra2
 !EOC
