@@ -1,4 +1,5 @@
-! https://github.com/geoschem/gchp/tree/master/ESMF/src/system_tests
+!------------------------------------------------------------------------------
+!BOP
 module LIS_create_gridMod
 
    use ESMF
@@ -14,6 +15,9 @@ module LIS_create_gridMod
    public  :: create_rectilinear_grid
    public  :: create_regular_grid
    public  :: create_regular_grid_2D
+!
+! !DESCRIPTION:
+! This module contains functions for creating ESMF grids.
    
 !EOP
 !------------------------------------------------------------------------------
@@ -23,7 +27,7 @@ contains
    function createRectilinearGrid(lon_center_points, lat_center_points, &
                                  lon_corner_points, lat_corner_points, &
                                  grid_name, Nx, Ny, &
-                                 coordSys, periodic) result(new_grid)
+                                 coordSys, xgrids, ygrids, using_model, periodic) result(new_grid)
       integer,          intent(in)    :: Nx ! number of PEs along longitudes
       integer,          intent(in)    :: Ny ! number of PEs along latitudes
       character(len=*), intent(in)    :: grid_name
@@ -32,6 +36,9 @@ contains
       real,             intent(in)    :: lat_corner_points(:)
       real,             intent(in)    :: lon_corner_points(:)
       type(ESMF_CoordSys_Flag)        :: coordSys ! Coordinate system: cartesian, spherical
+      integer,          intent(in)    :: xgrids(Nx*Ny) ! number of x grid points in each processor
+      integer,          intent(in)    :: ygrids(Nx*Ny) ! number of y grid points in each processor
+      logical,          intent(in)    :: using_model   ! are we trying to create the model grid?
       logical,               optional :: periodic
 !
 ! !RETURNED VALUE:
@@ -57,11 +64,16 @@ contains
 
       ! Determine the number of grid points to distributed to processors
       !-----------------------------------------------------------------
-      num_lons = SIZE(lon_center_points)
-      call decomposeDim(num_lons, countsPerDEDimX, Nx )
+      IF (using_model) THEN
+         countsPerDEDimX(:) = xgrids(1:Nx)
+         countsPerDEDimY(:) = ygrids(1:(Ny-1)*Nx:Nx)
+      ELSE
+         num_lons = SIZE(lon_center_points)
+         call decomposeDim(num_lons, countsPerDEDimX, Nx )
 
-      num_lats = SIZE(lat_center_points)
-      call decomposeDim(num_lats, countsPerDEDimY, Ny )
+         num_lats = SIZE(lat_center_points)
+         call decomposeDim(num_lats, countsPerDEDimY, Ny )
+      ENDIF
 
       ! Create the ESMF Grid
       !---------------------

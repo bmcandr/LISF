@@ -144,6 +144,10 @@ module nldas2_forcingMod
   end type nldas2_type_dec
 
   type(nldas2_type_dec), allocatable :: nldas2_struc(:)
+
+      integer, parameter :: sp = selected_real_kind(6, 37)
+      integer, parameter :: dp = selected_real_kind(15, 307)
+
 !EOP
 contains
   
@@ -414,9 +418,12 @@ contains
       real, pointer    :: lon_corners(:)
       real             :: min_lon, min_lat, dx, dy
       integer          :: num_lons, num_lats
-      real(kind=4), pointer  :: PTR4(:,:)
+      real(kind=sp), pointer  :: PTR4(:,:)
       type(ESMF_ArraySpec)   :: arrayspec
       logical                :: periodic
+      logical               :: using_model = .FALSE.
+      integer  :: xgrids(LIS_rc%npesx*LIS_rc%npesy)
+      integer  :: ygrids(LIS_rc%npesx*LIS_rc%npesy)
 !EOP
 !------------------------------------------------------------------------------
 !BOC
@@ -449,13 +456,13 @@ contains
       nldas2_struc(n)%forcing_grid = createRectilinearGrid(lon_centers, lat_centers, &
                                lon_corners, lat_corners, &
                                "NLDAS2 Grid", LIS_rc%npesx, LIS_rc%npesy, &
-                                ESMF_COORDSYS_CART, periodic = periodic)
+                                ESMF_COORDSYS_CART, xgrids, ygrids, using_model, periodic = periodic)
 
       if (trim(LIS_rc%met_interp(findex)) .eq. "budget-bilinear") THEN
          nldas2_struc(n)%forcing_gridCS = createRectilinearGrid(lon_centers, lat_centers, &
                                   lon_corners, lat_corners, &
                                   "NLDAS2 Grid Conservative", LIS_rc%npesx, LIS_rc%npesy, &
-                                   ESMF_COORDSYS_SPH_DEG, periodic = periodic)
+                                   ESMF_COORDSYS_SPH_DEG, xgrids, ygrids, using_model, periodic = periodic)
       endif
 
       DEALLOCATE(lon_centers, lat_centers)
@@ -522,13 +529,19 @@ contains
       real, pointer    :: lat_corners(:)
       real, pointer    :: lon_corners(:)
       real             :: dx, dy
-      real(kind=4), pointer :: PTR4(:,:)
+      real(kind=sp), pointer :: PTR4(:,:)
       type(ESMF_ArraySpec)  :: arrayspec
       logical               :: periodic
+      logical               :: using_model = .TRUE.
+      integer  :: xgrids(LIS_rc%npesx*LIS_rc%npesy)
+      integer  :: ygrids(LIS_rc%npesx*LIS_rc%npesy)
 !EOP
 !------------------------------------------------------------------------------
 !BOC
       write(LIS_logunit,*) '[INFO] Initialize model ESMF objects.'
+
+      xgrids(:) = LIS_ewe_halo_ind(n,:) - LIS_ews_halo_ind(n,:) + 1 ! LIS_rc%lnc(n)
+      ygrids(:) = LIS_nse_halo_ind(n,:) - LIS_nss_halo_ind(n,:) + 1 ! LIS_rc%lnr(n)
 
       periodic = .FALSE.       ! this grid is not periodic
       num_lons = LIS_rc%gnc(n)
@@ -562,13 +575,13 @@ contains
       nldas2_struc(n)%model_grid = createRectilinearGrid(lon_centers, lat_centers, &
                                lon_corners, lat_corners, &
                                "Model Grid", LIS_rc%npesx, LIS_rc%npesy, &
-                                ESMF_COORDSYS_CART, periodic = periodic)
+                                ESMF_COORDSYS_CART, xgrids, ygrids, using_model, periodic = periodic)
 
       if (trim(LIS_rc%met_interp(findex)) .eq. "budget-bilinear") THEN
          nldas2_struc(n)%model_gridCS = createRectilinearGrid(lon_centers, lat_centers, &
                                   lon_corners, lat_corners, &
                                   "Model Grid Conservative", LIS_rc%npesx, LIS_rc%npesy, &
-                                   ESMF_COORDSYS_SPH_DEG, periodic = periodic)
+                                   ESMF_COORDSYS_SPH_DEG, xgrids, ygrids, using_model, periodic = periodic)
       endif
 
       DEALLOCATE(lon_centers, lat_centers)

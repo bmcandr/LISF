@@ -65,6 +65,8 @@
       end type ESMF_recordBundle
 
       integer, PARAMETER :: MAXSTR = ESMF_MAXSTR
+      integer, parameter :: sp = selected_real_kind(6, 37)
+      integer, parameter :: dp = selected_real_kind(15, 307)
 
 ! !DESCRIPTION:
 ! Basic routines for manipulating ESMF bundles.
@@ -89,10 +91,10 @@
 !
 ! !LOCAL VARIABLES:
       integer :: fieldCount, fieldRank, j, rc
-      !real(kind=4), pointer :: var2d_dstR4(:,:), var2d_srcR4(:,:)
-      !real(kind=4), pointer :: var2d_dstR4(:,:,:), var2d_srcR4(:,:,:)
-      !real(kind=8), pointer :: var2d_dstR8(:,:), var2d_srcR8(:,:)
-      !real(kind=8), pointer :: var2d_dstR8(:,:,:), var2d_srcR8(:,:,:)
+      !real(kind=sp), pointer :: var2d_dstR4(:,:), var2d_srcR4(:,:)
+      !real(kind=sp), pointer :: var2d_dstR4(:,:,:), var2d_srcR4(:,:,:)
+      !real(kind=dp), pointer :: var2d_dstR8(:,:), var2d_srcR8(:,:)
+      !real(kind=dp), pointer :: var2d_dstR8(:,:,:), var2d_srcR8(:,:,:)
       !type(ESMF_Array)       :: array
       !type(ESMF_TypeKind_Flag)      :: kind_type
       type (ESMF_Field)     :: field_dst, field_src
@@ -176,8 +178,8 @@
 !
 ! !LOCAL VARIABLES:
       integer :: rc, status
-      real(kind=8), pointer :: PTR8(:,:,:)
-      real(kind=4), pointer :: PTR4(:,:,:)
+      real(kind=dp), pointer :: PTR8(:,:,:)
+      real(kind=sp), pointer :: PTR4(:,:,:)
       type(ESMF_ArraySpec)  :: arrayspec
       type (ESMF_Field)     :: field
       character(len=MAXSTR) :: IAm='addTracerToBundle3D'
@@ -219,7 +221,7 @@
       subroutine updateTracerToBundle_ByName3D_r8(bundle, PTR, fieldName)
 !
 ! !INPUT PARAMETERS:
-      real(kind=8), pointer :: PTR(:,:,:)
+      real(kind=dp), pointer :: PTR(:,:,:)
       character(len=*), intent(in) :: fieldName
 !
 ! !INPUT/OUTPUT PARAMETERS:
@@ -230,7 +232,7 @@
 !
 ! !LOCAL VARIABLES:
       integer :: rc, status
-      real(kind=8), pointer :: ptr3D(:,:,:)
+      real(kind=dp), pointer :: ptr3D(:,:,:)
       type(ESMF_FIELD)           :: field
       type(ESMF_ARRAY)           :: array
       character(len=MAXSTR) :: IAm='updateTracerToBundle_ByName3D_r8'
@@ -261,7 +263,7 @@
       subroutine updateTracerToBundle_ByName3D_r4(bundle, PTR, fieldName)
 !
 ! !INPUT PARAMETERS:
-      real(kind=4), pointer :: PTR(:,:,:)
+      real(kind=sp), pointer :: PTR(:,:,:)
       character(len=*), intent(in) :: fieldName
 !
 ! !INPUT/OUTPUT PARAMETERS:
@@ -272,7 +274,7 @@
 !
 ! !LOCAL VARIABLES:
       integer :: rc, status
-      real(kind=4), pointer :: ptr3D(:,:,:)
+      real(kind=sp), pointer :: ptr3D(:,:,:)
       type(ESMF_FIELD)           :: field
       type(ESMF_ARRAY)           :: array
       character(len=MAXSTR) :: IAm='updateTracerToBundle_ByName3D_r4'
@@ -303,7 +305,7 @@
       subroutine updateTracerToBundle_ByIndex3D_r8(bundle, PTR, index)
 !
 ! !INPUT PARAMETERS:
-      real(kind=8), pointer :: PTR(:,:,:)
+      real(kind=dp), pointer :: PTR(:,:,:)
       integer,                    intent(in) :: index
 !
 ! !INPUT/OUTPUT PARAMETERS:
@@ -314,7 +316,7 @@
 !
 ! !LOCAL VARIABLES:
       integer :: rc, status
-      real(kind=8), pointer :: ptr3D(:,:,:)
+      real(kind=dp), pointer :: ptr3D(:,:,:)
       type(ESMF_FIELD)           :: field
       type(ESMF_ARRAY)           :: array
       character(len=MAXSTR) :: IAm='updateTracerToBundle_ByIndex3D_r8'
@@ -345,7 +347,7 @@
       subroutine updateTracerToBundle_ByIndex3D_r4(bundle, PTR, index)
 !
 ! !INPUT PARAMETERS:
-      real(kind=4), pointer :: PTR(:,:,:)
+      real(kind=sp), pointer :: PTR(:,:,:)
       integer,                    intent(in) :: index
 !
 ! !INPUT/OUTPUT PARAMETERS:
@@ -356,7 +358,7 @@
 !
 ! !LOCAL VARIABLES:
       integer :: rc, status
-      real(kind=4), pointer :: ptr3D(:,:,:)
+      real(kind=sp), pointer :: ptr3D(:,:,:)
       type(ESMF_FIELD)           :: field
       type(ESMF_ARRAY)           :: array
       character(len=MAXSTR) :: IAm='updateTracerToBundle_ByIndex3D_r4'
@@ -390,7 +392,7 @@
       character(len=*), intent(in) :: fieldName
 !
 ! !OUTPUT PARAMETERS:
-      real(kind=8), pointer :: PTR(:,:,:)
+      real(kind=dp), pointer :: PTR(:,:,:)
 !
 ! !INPUT/OUTPUT PARAMETERS:
       type (ESMF_FieldBundle), intent(inOut) :: bundle
@@ -431,7 +433,7 @@
       character(len=*), intent(in) :: fieldName
 !
 ! !OUTPUT PARAMETERS:
-      real(kind=4), pointer :: PTR(:,:,:)
+      real(kind=sp), pointer :: PTR(:,:,:)
 !
 ! !INPUT/OUTPUT PARAMETERS:
       type (ESMF_FieldBundle), intent(inOut) :: bundle
@@ -472,7 +474,7 @@
       integer, intent(in) :: index
 !
 ! !OUTPUT PARAMETERS:
-      real(kind=8), pointer :: PTR(:,:,:)
+      real(kind=dp), pointer :: PTR(:,:,:)
 !
 ! !INPUT/OUTPUT PARAMETERS:
       type (ESMF_FieldBundle), intent(inOut) :: bundle
@@ -513,7 +515,7 @@
       integer, intent(in) :: index
 !
 ! !OUTPUT PARAMETERS:
-      real(kind=4), pointer :: PTR(:,:,:)
+      real(kind=sp), pointer :: PTR(:,:,:)
 !
 ! !INPUT/OUTPUT PARAMETERS:
       type (ESMF_FieldBundle), intent(inOut) :: bundle
@@ -563,8 +565,8 @@
 ! Adds tracers to a bundle.
 !
 ! !LOCAL VARIABLES:
-      real(kind=8), pointer        :: PTR8(:,:)
-      real(kind=4), pointer        :: PTR4(:,:)
+      real(kind=dp), pointer        :: PTR8(:,:)
+      real(kind=sp), pointer        :: PTR4(:,:)
       type(ESMF_ArraySpec)         :: arrayspec
       integer                      :: rc, status
       type (ESMF_Field)            :: field
@@ -607,7 +609,7 @@
       subroutine updateTracerToBundle_ByName2D_r8(bundle, PTR, fieldName)
 !
 ! !INPUT PARAMETERS:
-      real(kind=8), pointer :: PTR(:,:)
+      real(kind=dp), pointer :: PTR(:,:)
       character(len=*), intent(in) :: fieldName
 !
 ! !INPUT/OUTPUT PARAMETERS:
@@ -618,7 +620,7 @@
 !
 ! !LOCAL VARIABLES:
       integer :: rc, status
-      real(kind=8), pointer :: ptr2D(:,:)
+      real(kind=dp), pointer :: ptr2D(:,:)
       type(ESMF_FIELD)           :: field
       type(ESMF_ARRAY)           :: array
       character(len=MAXSTR) :: IAm='updateTracerToBundle_ByName2D_r8'
@@ -652,7 +654,7 @@
       subroutine updateTracerToBundle_ByName2D_r4(bundle, PTR, fieldName)
 !
 ! !INPUT PARAMETERS:
-      real(kind=4), pointer :: PTR(:,:)
+      real(kind=sp), pointer :: PTR(:,:)
       character(len=*), intent(in) :: fieldName
 !
 ! !INPUT/OUTPUT PARAMETERS:
@@ -663,7 +665,7 @@
 !
 ! !LOCAL VARIABLES:
       integer :: rc, status
-      real(kind=4), pointer :: ptr2D(:,:)
+      real(kind=sp), pointer :: ptr2D(:,:)
       type(ESMF_FIELD)           :: field
       type(ESMF_ARRAY)           :: array
       character(len=MAXSTR) :: IAm='updateTracerToBundle_ByName2D_r4'
@@ -697,7 +699,7 @@
       subroutine updateTracerToBundle_ByIndex2D_r8(bundle, PTR, index)
 !
 ! !INPUT PARAMETERS:
-      real(kind=8), pointer :: PTR(:,:)
+      real(kind=dp), pointer :: PTR(:,:)
       integer,                    intent(in) :: index
 !
 ! !INPUT/OUTPUT PARAMETERS:
@@ -708,7 +710,7 @@
 !
 ! !LOCAL VARIABLES:
       integer :: rc, status
-      real(kind=8), pointer :: ptr2D(:,:)
+      real(kind=dp), pointer :: ptr2D(:,:)
       type(ESMF_FIELD)           :: field
       type(ESMF_ARRAY)           :: array
       character(len=MAXSTR) :: IAm='updateTracerToBundle_ByIndex2D_r8'
@@ -739,7 +741,7 @@
       subroutine updateTracerToBundle_ByIndex2D_r4(bundle, PTR, index)
 !
 ! !INPUT PARAMETERS:
-      real(kind=4), pointer :: PTR(:,:)
+      real(kind=sp), pointer :: PTR(:,:)
       integer,                    intent(in) :: index
 !
 ! !INPUT/OUTPUT PARAMETERS:
@@ -750,7 +752,7 @@
 !
 ! !LOCAL VARIABLES:
       integer :: rc, status
-      real(kind=4), pointer :: ptr2D(:,:)
+      real(kind=sp), pointer :: ptr2D(:,:)
       type(ESMF_FIELD)           :: field
       type(ESMF_ARRAY)           :: array
       character(len=MAXSTR) :: IAm='updateTracerToBundle_ByIndex2D_r4'
@@ -784,7 +786,7 @@
       character(len=*), intent(in) :: fieldName
 !
 ! !OUTPUT PARAMETERS:
-      real(kind=8), pointer :: PTR(:,:)
+      real(kind=dp), pointer :: PTR(:,:)
 !
 ! !INPUT/OUTPUT PARAMETERS:
       type (ESMF_FieldBundle), intent(inOut) :: bundle
@@ -825,7 +827,7 @@
       character(len=*), intent(in) :: fieldName
 !
 ! !OUTPUT PARAMETERS:
-      real(kind=4), pointer :: PTR(:,:)
+      real(kind=sp), pointer :: PTR(:,:)
 !
 ! !INPUT/OUTPUT PARAMETERS:
       type (ESMF_FieldBundle), intent(inOut) :: bundle
@@ -866,7 +868,7 @@
       integer, intent(in) :: index
 !
 ! !OUTPUT PARAMETERS:
-      real(kind=8), pointer :: PTR(:,:)
+      real(kind=dp), pointer :: PTR(:,:)
 !
 ! !INPUT/OUTPUT PARAMETERS:
       type (ESMF_FieldBundle), intent(inOut) :: bundle
@@ -907,7 +909,7 @@
       integer, intent(in) :: index
 !
 ! !OUTPUT PARAMETERS:
-      real(kind=4), pointer :: PTR(:,:)
+      real(kind=sp), pointer :: PTR(:,:)
 !
 ! !INPUT/OUTPUT PARAMETERS:
       type (ESMF_FieldBundle), intent(inOut) :: bundle
@@ -964,7 +966,7 @@
       subroutine getPointerFromField_r8_2D(field, PTR)
 !
 ! !OUTPUT PARAMETERS:
-      real(kind=8), pointer :: PTR(:,:)
+      real(kind=dp), pointer :: PTR(:,:)
 !
 ! !INPUT/OUTPUT PARAMETERS:
       type (ESMF_Field), intent(inOut) :: field
@@ -998,7 +1000,7 @@
       subroutine getPointerFromField_r4_2D(field, PTR)
 !
 ! !OUTPUT PARAMETERS:
-      real(kind=4), pointer :: PTR(:,:)
+      real(kind=sp), pointer :: PTR(:,:)
 !
 ! !INPUT/OUTPUT PARAMETERS:
       type (ESMF_Field), intent(inOut) :: field
@@ -1032,7 +1034,7 @@
       subroutine getPointerFromField_r8_3D(field, PTR)
 !
 ! !OUTPUT PARAMETERS:
-      real(kind=8), pointer :: PTR(:,:,:)
+      real(kind=dp), pointer :: PTR(:,:,:)
 !
 ! !INPUT/OUTPUT PARAMETERS:
       type (ESMF_Field), intent(inOut) :: field
@@ -1066,7 +1068,7 @@
       subroutine getPointerFromField_r4_3D(field, PTR)
 !
 ! !OUTPUT PARAMETERS:
-      real(kind=4), pointer :: PTR(:,:,:)
+      real(kind=sp), pointer :: PTR(:,:,:)
 !
 ! !INPUT/OUTPUT PARAMETERS:
       type (ESMF_Field), intent(inOut) :: field

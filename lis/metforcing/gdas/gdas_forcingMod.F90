@@ -164,6 +164,9 @@ module gdas_forcingMod
 
   type(gdas_type_dec), allocatable :: gdas_struc(:)
 
+      integer, parameter :: sp = selected_real_kind(6, 37)
+      integer, parameter :: dp = selected_real_kind(15, 307)
+
 contains
 
 !BOP
