@@ -394,6 +394,9 @@ contains
       real(kind=4), pointer        :: PTR4(:,:)
       type(ESMF_ArraySpec)         :: arrayspec
       logical               :: periodic
+      logical               :: using_model = .FALSE.
+      integer  :: xgrids(LIS_rc%npesx*LIS_rc%npesy)
+      integer  :: ygrids(LIS_rc%npesx*LIS_rc%npesy)
 !EOP
 !------------------------------------------------------------------------------
 !BOC
@@ -435,14 +438,16 @@ contains
          gdas_struc(n)%forcing_grid = createRectilinearGrid(lon_centers, lat_centers, &
                                   lon_corners, lat_corners, &
                                   "GDAS Grid", LIS_rc%npesx, LIS_rc%npesy,  &
-                                   ESMF_COORDSYS_SPH_DEG, &
-                                   periodic   = periodic)
+                                  ESMF_COORDSYS_SPH_DEG, &
+                                  xgrids, ygrids, using_model, &
+                                  periodic   = periodic)
       else if (trim(LIS_rc%met_interp(findex)) .eq. "neighbor") THEN
          gdas_struc(n)%forcing_grid = createRectilinearGrid(lon_centers, lat_centers, &
                                   lon_corners, lat_corners, &
                                   "GDAS Grid", LIS_rc%npesx, LIS_rc%npesy,  &
-                                   ESMF_COORDSYS_CART, &
-                                   periodic   = periodic)
+                                  ESMF_COORDSYS_CART, &
+                                  xgrids, ygrids, using_model, &
+                                  periodic   = periodic)
       endif
 
       DEALLOCATE(lon_centers, lat_centers)
@@ -501,10 +506,16 @@ contains
       type(ESMF_ArraySpec)  :: arrayspec
       real                  :: dx, dy
       logical               :: periodic
+      logical               :: using_model = .TRUE.
+      integer  :: xgrids(LIS_rc%npesx*LIS_rc%npesy)
+      integer  :: ygrids(LIS_rc%npesx*LIS_rc%npesy)
 !EOP
 !------------------------------------------------------------------------------
 !BOC
       write(LIS_logunit,*) '[INFO] Initialize GDAS and model ESMF objects.'
+
+      xgrids(:) = LIS_ewe_halo_ind(n,:) - LIS_ews_halo_ind(n,:) + 1 ! LIS_rc%lnc(n)
+      ygrids(:) = LIS_nse_halo_ind(n,:) - LIS_nss_halo_ind(n,:) + 1 ! LIS_rc%lnr(n)
 
       periodic = .FALSE.    ! the grid is not periodic
 
@@ -527,13 +538,17 @@ contains
            (trim(LIS_rc%met_interp(findex)) .eq. "budget-bilinear") )THEN
          gdas_struc(n)%model_grid = createRectilinearGrid(lon_centers, lat_centers, &
                                    lon_corners, lat_corners, &
-                                  "Model Grid", LIS_rc%npesx, LIS_rc%npesy, &
-                                   ESMF_COORDSYS_SPH_DEG, periodic = periodic)
+                                   "Model Grid", LIS_rc%npesx, LIS_rc%npesy, &
+                                   ESMF_COORDSYS_SPH_DEG, &
+                                   xgrids, ygrids, using_model, &
+                                   periodic = periodic)
       else if (trim(LIS_rc%met_interp(findex)) .eq. "neighbor") THEN
          gdas_struc(n)%model_grid = createRectilinearGrid(lon_centers, lat_centers, &
                                    lon_corners, lat_corners, &
-                                  "Model Grid", LIS_rc%npesx, LIS_rc%npesy, &
-                                   ESMF_COORDSYS_CART, periodic = periodic)
+                                   "Model Grid", LIS_rc%npesx, LIS_rc%npesy, &
+                                   ESMF_COORDSYS_CART, &
+                                   xgrids, ygrids, using_model, &
+                                   periodic = periodic)
       endif
 
 
